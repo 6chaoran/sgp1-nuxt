@@ -16,7 +16,5 @@ jobs:
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SGP1_79C40 }}
-          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-          FIREBASE_DB_URL: ${{ secrets.FIREBASE_DB_URL }}
           channelId: live
           projectId: sgp1-79c40
