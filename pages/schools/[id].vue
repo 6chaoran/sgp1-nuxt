@@ -43,7 +43,7 @@ const items = computed(() => {
     {
       title: profile.value?.area,
       disabled: false,
-      href: `/area/${profile.value?.area?.toLowerCase()}`,
+      href: `/area/${profile.value?.area}`,
     }
   ]
 })
