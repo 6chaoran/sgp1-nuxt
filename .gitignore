@@ -1,2 +1,4 @@
 node_modules
 public/school_logo
+.nuxt
+.output
