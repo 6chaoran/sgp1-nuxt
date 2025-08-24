@@ -94,25 +94,25 @@
 import { ChevronRightIcon } from '@heroicons/vue/20/solid'
 const route = useRoute();
 const id = route.params.area
-const { data } = await useFetch('/api/list_school')
-const schools = ref(data.value.filter(x => x.school_id != 'juying'))
-const schoolsForDisplay = computed(() => {
-  return schools.value.filter((x) => x.area.toLowerCase() == id)
-})
+// const { data } = await useFetch('/api/list_school')
+// const schools = ref(data.value.filter(x => x.school_id != 'juying'))
+// const schoolsForDisplay = computed(() => {
+//   return schools.value.filter((x) => x.area.toLowerCase() == id)
+// })
 
-const items = computed(() => {
-  return [
-    {
-      title: 'School List',
-      disabled: false,
-      href: '/',
-    },
-    {
-      title: schoolsForDisplay.value[0].area,
-      disabled: true,
-      href: '/',
-    }
-  ]
-})
+// const items = computed(() => {
+//   return [
+//     {
+//       title: 'School List',
+//       disabled: false,
+//       href: '/',
+//     },
+//     {
+//       title: schoolsForDisplay.value[0].area,
+//       disabled: true,
+//       href: '/',
+//     }
+//   ]
+// })
 
 </script>

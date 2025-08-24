@@ -9,10 +9,8 @@ export default defineNuxtConfig({
         maxInstances: 1,
       },
       nodeVersion: '18' // Can be '16' or '18' or '20'
-
     },
   },
-
   modules: [
     '@nuxtjs/tailwindcss',
     '@nuxt/image',
@@ -27,9 +25,9 @@ export default defineNuxtConfig({
   // https://nuxt.com/docs/api/configuration/nuxt-config
   vuefire: {
     config: {
-        apiKey: "AIzaSyDvwctO4xjmNg8Rw0pHwuBCdHRYM0_ePKQ",
+        apiKey: process.env.FIREBASE_API_KEY,
         authDomain: "sgp1-79c40.firebaseapp.com",
-        databaseURL: "https://sgp1-79c40-default-rtdb.asia-southeast1.firebasedatabase.app",
+        databaseURL: process.env.FIREBASE_DB_URL,
         projectId: "sgp1-79c40",
         storageBucket: "sgp1-79c40.firebasestorage.app",
         messagingSenderId: "200401677860",

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 export const useAppStore = defineStore('app', {
   state: () => ({
-    selectedYear: { name: '2024' },
+    selectedYear: { name: '2025' },
     showReviewModel: false,
     reviews: [],
     profile: {},
