@@ -1,7 +1,7 @@
 <template>
-    <Combobox v-model="selected">
+    <Combobox v-model="selected" as="div">
       <ComboboxLabel class="block text-sm font-medium leading-6 text-gray-900">{{ labelText }}</ComboboxLabel>
-      <div class="relative mt-2">
+      <div class="relative mt-1">
         <div
           class="mt-1 shadow-md relative w-full cursor-default overflow-hidden rounded-md bg-white text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-300 sm:text-sm"
         >

@@ -99,8 +99,15 @@
                             <p class="text-xs text-gray-500 ">{{ Number(school.review_rating_avg) ?
                                 school.review_rating_avg.toFixed(2) : 'N/A' }}</p>
                         </div>
-                        <p class="text-xs leading-5 text-gray-500"> | odds/{{ selected.phase.name }}: {{ school.odds?.[selected.phase.name] ?
+                        <div class="flex items-center">
+                        <p class="text-xs leading-5 text-gray-500">  |  </p>
+                        <ReceiptPercentIcon class="h-4 w-4 text-indigo-600 me-1 ml-1" /> 
+                            <p class="text-xs leading-5 text-gray-500 -ml-1">  
+                        odds({{ selected.phase.name }}): {{ school.odds?.[selected.phase.name] ?
                             (school.odds[selected.phase.name] * 100).toFixed(0) : 'N/A' }}%</p>
+                        </div>
+
+
 
                     </div>
                     <p class="mt-1 flex text-xs leading-5 text-gray-500">
@@ -117,6 +124,8 @@
 <script setup>
 
 import { ChevronRightIcon } from '@heroicons/vue/20/solid'
+import { ReceiptPercentIcon } from '@heroicons/vue/20/solid'
+
 import { getAffilList } from '../utils/selectionChoices'
 
 const props = defineProps({
