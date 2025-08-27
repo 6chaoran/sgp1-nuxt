@@ -1,5 +1,5 @@
 <template>
-    <Combobox v-model="selected" as="div">
+    <Combobox v-model="selected" as="div" nullable >
       <ComboboxLabel class="block text-sm font-medium leading-6 text-gray-900">{{ labelText }}</ComboboxLabel>
       <div class="relative mt-1 shadow-md">
         <div
@@ -13,7 +13,7 @@
           <ComboboxButton
             class="absolute inset-y-0 right-0 flex items-center pr-2 leading-6"
           >
-            <ChevronUpDownIcon
+            <ChevronDownIcon
               class="h-5 w-5 text-gray-400"
               aria-hidden="true"
             />
@@ -44,7 +44,7 @@
               @click="$emit('update:selectedSchool', person.name)"
             >
               <li
-                class="relative cursor-default select-none py-1.5 pl-10 pr-4"
+                class="relative cursor-default select-none py-1.5 pl-4 pr-4"
                 :class="{
                   'bg-indigo-600 text-white': active,
                   'text-gray-900': !active,
@@ -82,7 +82,7 @@ import {
   TransitionRoot,
   ComboboxLabel,
 } from '@headlessui/vue'
-import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
+import { CheckIcon, ChevronUpDownIcon, ChevronDownIcon } from '@heroicons/vue/20/solid'
 const props = defineProps({
   // schoolList: Array
   labelText: String,
@@ -103,8 +103,8 @@ let filteredPeople = computed(() =>
     : props.schools.filter((person) =>
         person?.name
           .toLowerCase()
-          .replace(/\s+/g, '')
-          .includes(query.value.toLowerCase().replace(/\s+/g, ''))
+          // .replace(/\s+/g, '')
+          .includes(query.value.toLowerCase())
       )
 )
 </script>

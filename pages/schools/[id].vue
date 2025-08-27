@@ -1,11 +1,10 @@
 <template>
   <SchoolProfile :profile="profile" :items="items" />
   <div class="mt-4 sm:mt-0 sm:flex-none sm:w-1/6">
-    <SelectMenu label-text="Year" :choices="yearChoices" :selected="selectedYear" v-model="selectedYear" />
+    <InputsSelectMenu label-text="Year" :choices="yearChoices" :selected="selectedYear" v-model="selectedYear" />
   </div>
   <BallotHistory :ballotHistoryData="ballot" :year="selectedYear.name"/>
   <ReviewModal :school-id="id" :reviews="reviews"/>
-  
 </template>
   
 <script setup>

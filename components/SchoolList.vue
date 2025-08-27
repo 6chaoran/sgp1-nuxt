@@ -50,7 +50,7 @@
                 v-model="selected.phase" />
         </div>
         <div class="w-auto">
-            <MapPinIcon class="h-6 w-6 text-indigo-600 ml-2 mt-7" aria-hidden="true" @click="getLocation()" />
+            <MapPinIcon class="h-6 w-6 text-indigo-600 ml-2 mt-8" aria-hidden="true" @click="getLocation()" />
         </div>
     </div>
 

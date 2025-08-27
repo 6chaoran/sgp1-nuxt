@@ -2,7 +2,7 @@
     <div class="-mx-4">
         <v-breadcrumbs :items="items" color="indigo-darken-3" divider="/"> <span class="text-gray-600">&nbsp;&nbsp;/</span>
             <template v-slot:prepend>
-                <v-icon size="small" icon="mdi-home" color="indigo-600"></v-icon>
+                <HomeIcon class="h-5 w-5 text-indigo-600 mb-1 mr-1" aria-hidden="true" />
             </template>
         </v-breadcrumbs>
     </div>
@@ -32,9 +32,10 @@
                         Affiliations
                     </span>
                 </h1>
-                <div class="mt-2">
-                    <v-icon icon="mdi-map-marker" size="small" color="gray-600" class="pa-1 mr-2"></v-icon><span
-                        class="mt-2 text-sm text-gray-700"><NuxtLink :to="profile.googlemap_url" target="_blank">{{ profile.address }}</NuxtLink> &nbsp; | &nbsp; <NuxtLink
+                <div class="mt-2 flex items-center">
+                    <MapPinIcon class="h-4 w-4 text-indigo-600 inline-block mr-2" aria-hidden="true"  />
+                    <span
+                        class="text-sm text-gray-700"><NuxtLink :to="profile.googlemap_url" target="_blank">{{ profile.address }}</NuxtLink> &nbsp; | &nbsp; <NuxtLink
                             :to="profile.website" target="_blank" class="underline">Website</NuxtLink></span>
                 </div>
                 <div class="mt-3">
@@ -55,6 +56,8 @@
 </template>
 
 <script setup>
+import { HomeIcon, MapPinIcon, StarIcon } from '@heroicons/vue/24/solid';
+
 
 const props = defineProps({
     profile: Object,
