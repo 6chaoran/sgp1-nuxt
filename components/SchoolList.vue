@@ -145,6 +145,8 @@ const affilChoices = getAffilList()
 const phaseChoices = [{ name: '2A' }, { name: '2B' }, { name: '2C' }, { name: '2C(S)' }]
 
 const data = ref(null)
+const lat = ref(null)
+const lon = ref(null)
 
 import { ref as dbRef } from 'firebase/database'
 import { useDatabase, useDatabaseList } from 'vuefire'
@@ -168,9 +170,7 @@ const updateSchoolFilter = (school) => {
     console.log('Selected school updated to:', selected.value.school);
 };
 
-const { lat, lon, error, loading, getLoc } = useGeolocation()
-const { haversineDistance } = useGeoDistance()
-
+import { getLoc, haversineDistance } from '../utils/geo'
 
 const getGeoDistanceBand = (lat1, lon1, lat2, lon2) => {
     const distKm = haversineDistance(lat1, lon1, lat2, lon2, "km")
@@ -181,16 +181,21 @@ const getGeoDistanceBand = (lat1, lon1, lat2, lon2) => {
     }
 }
 
-const getLocation = () => {
-    getLoc()
-    console.log(lat.value, lon.value, error.value, loading.value)
-    if (lat.value && lon.value) {
+const getLocation = async() => {
+    try {
+        const { latitude, longitude } = await getLoc()
+        console.log('User location:', latitude, longitude);
+        lat.value = latitude
+        lon.value = longitude
         schools.value.forEach(school => {
-            school.distance = haversineDistance(lat.value, lon.value, school.latlon.lat, school.latlon.lon, "km")
-        });
-
-        schools.value.sort((a, b) => a.distance - b.distance);
+            school.distance = haversineDistance(latitude, longitude, school.latlon.lat, school.latlon.lon, "km")
+        })
+        schools.value.sort((a, b) => a.distance - b.distance)
+    } catch (err) {
+        console.error(err)
     }
+
+
 }
 
 const schoolsForDisplay = computed(() => {
