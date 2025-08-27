@@ -1,9 +1,9 @@
 <template>
     <Combobox v-model="selected" as="div">
       <ComboboxLabel class="block text-sm font-medium leading-6 text-gray-900">{{ labelText }}</ComboboxLabel>
-      <div class="relative mt-1">
+      <div class="relative mt-1 shadow-md">
         <div
-          class="mt-1 shadow-md relative w-full cursor-default overflow-hidden rounded-md bg-white text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-300 sm:text-sm"
+          class="relative w-full cursor-default overflow-hidden rounded-md bg-white text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-300 sm:text-sm"
         >
           <ComboboxInput
             class="w-full border border-gray-300 py-1.5 pl-3 pr-10 text-sm text-gray-900 rounded-lg focus:border-indigo-500 focus:ring-indigo-500"

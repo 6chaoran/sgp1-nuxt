@@ -1,19 +1,23 @@
 <template>
     <div>
+        <p id="output"></p>
+
         <h2 class="font-semibold text-indigo-600">Intro
             <span><v-icon :class="['transition', showIntro ? '' : 'rotate-180']" icon="mdi-chevron-double-down"
                     color="indigo-600" size="20px" @click="showIntro = !showIntro"></v-icon></span>
         </h2>
-        <div v-show="showIntro" class="text-sm">
-            <p> I know, I know "every primary school is a good school", but kiasu parents still cautiously plan their
-                strategies
-                for their little ones' primary one registration.
-                Some quetisons are appareantly brother the parents.
-                Shall I join the parent voluneer program now to secure the 2B round ?
-                Shall I move to another district that is less competitive in P1 application? </p>
-            <p>I hope this is the tool, that should provide some number insights to help with your important decisions.
-                Lastly,
-                may your kid goes to the dream school, as you wish!</p>
+        <div v-show="showIntro" class="text-sm justify text-gray-600 mt-2 space-y-2">
+            <p>
+                I know, I know — "every primary school is a good school." But kiasu parents still carefully plan their
+                strategies for their little ones' Primary One registration. Some questions clearly bother the parents:
+                Should I join the parent volunteer program now to secure a spot in the 2B round?
+                Should I move to another district that is less competitive for P1 applications?
+            </p>
+            <p>
+                I hope this tool provides some numerical insights to help with your important decisions.
+                And finally, may your child get into the school of your dreams!
+            </p>
+
 
         </div>
 
@@ -38,12 +42,15 @@
 
     <div class="flex flex-row space-x-1 mt-6">
         <div class="w-3/4 sm:w-3/4 ">
-            <InputsAutoComplete label-text="School Filter"
-            :schools="schoolsForDisplay" @update:selected-school="updateSchoolFilter" />
+            <InputsAutoComplete label-text="Search School" :schools="schoolsForDisplay"
+                @update:selected-school="updateSchoolFilter" />
         </div>
         <div class="w-1/4 sm:w-1/4">
             <InputsSelectMenu label-text="Target Phase" :choices="phaseChoices" :selected="selected.phase"
                 v-model="selected.phase" />
+        </div>
+        <div class="w-auto">
+            <MapPinIcon class="h-6 w-6 text-indigo-600 ml-2 mt-7" aria-hidden="true" @click="getLocation()" />
         </div>
     </div>
 
@@ -100,18 +107,16 @@
                                 school.review_rating_avg.toFixed(2) : 'N/A' }}</p>
                         </div>
                         <div class="flex items-center">
-                        <p class="text-xs leading-5 text-gray-500">  |  </p>
-                        <ReceiptPercentIcon class="h-4 w-4 text-indigo-600 me-1 ml-1" /> 
-                            <p class="text-xs leading-5 text-gray-500 -ml-1">  
-                        odds({{ selected.phase.name }}): {{ school.odds?.[selected.phase.name] ?
-                            (school.odds[selected.phase.name] * 100).toFixed(0) : 'N/A' }}%</p>
+                            <p class="text-xs leading-5 text-gray-500"> | </p>
+                            <ReceiptPercentIcon class="h-4 w-4 text-indigo-600 me-1 ml-1" />
+                            <p class="text-xs leading-5 text-gray-500 -ml-1">
+                                odds({{ selected.phase.name }}): {{ school.odds?.[selected.phase.name] ?
+                                    (school.odds[selected.phase.name] * 100).toFixed(0) : 'N/A' }}%</p>
                         </div>
-
-
-
                     </div>
                     <p class="mt-1 flex text-xs leading-5 text-gray-500">
-                        {{ school.address }}
+                        {{ school.address }} <span class="ml-3">({{ getGeoDistanceBand(lat, lon, school.latlon.lat,
+                            school.latlon.lon, "km") }})</span>
                     </p>
                 </div>
             </div>
@@ -123,9 +128,7 @@
 </template>
 <script setup>
 
-import { ChevronRightIcon } from '@heroicons/vue/20/solid'
-import { ReceiptPercentIcon } from '@heroicons/vue/20/solid'
-
+import { ChevronRightIcon, ReceiptPercentIcon, MagnifyingGlassPlusIcon, MapPinIcon } from '@heroicons/vue/20/solid'
 import { getAffilList } from '../utils/selectionChoices'
 
 const props = defineProps({
@@ -164,6 +167,31 @@ const updateSchoolFilter = (school) => {
     selected.value.school = school;
     console.log('Selected school updated to:', selected.value.school);
 };
+
+const { lat, lon, error, loading, getLoc } = useGeolocation()
+const { haversineDistance } = useGeoDistance()
+
+
+const getGeoDistanceBand = (lat1, lon1, lat2, lon2) => {
+    const distKm = haversineDistance(lat1, lon1, lat2, lon2, "km")
+    if (distKm < 2) {
+        return `${distKm.toFixed(1)}km`
+    } else {
+        return '>2km'
+    }
+}
+
+const getLocation = () => {
+    getLoc()
+    console.log(lat.value, lon.value, error.value, loading.value)
+    if (lat.value && lon.value) {
+        schools.value.forEach(school => {
+            school.distance = haversineDistance(lat.value, lon.value, school.latlon.lat, school.latlon.lon, "km")
+        });
+
+        schools.value.sort((a, b) => a.distance - b.distance);
+    }
+}
 
 const schoolsForDisplay = computed(() => {
     const area = selected.value.area.name
@@ -205,6 +233,11 @@ const schoolsForDisplay = computed(() => {
     if (school) {
         filtered = schools.value.filter((x) => x.name === school)
     }
+
+    // if (lat.value && lon.value) {
+    //     filtered = schools.value.filter((x) => x.distance < 2)
+    // } 
+
     return filtered
 
 })
