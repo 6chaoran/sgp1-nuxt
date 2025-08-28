@@ -1,7 +1,6 @@
 <template>
     <div>
         <p id="output"></p>
-
         <h2 class="font-semibold text-indigo-600">Intro
             <span><v-icon :class="['transition', showIntro ? '' : 'rotate-180']" icon="mdi-chevron-double-down"
                     color="indigo-600" size="20px" @click="showIntro = !showIntro"></v-icon></span>
@@ -24,33 +23,37 @@
     </div>
     <v-divider class="my-3"></v-divider>
     <div class="flex flex-row space-x-1">
-        <div class="w-1/2 sm:w-1/2">
+        <div class="w-[40%] sm:w-1/2">
             <InputsSelectMenu label-text="Area" :choices="areaChoices" :selected="selected.area"
                 v-model="selected.area" />
         </div>
-        <div class="w-1/6 sm:w-1/6">
+        <div class="w-[20%] sm:w-1/6">
             <InputsSelectMenu label-text="SAP" :choices="sapChoices" :selected="selected.sap" v-model="selected.sap" />
         </div>
-        <div class="w-1/6  sm:w-1/6">
+        <div class="w-[20%]  sm:w-1/6">
             <InputsSelectMenu label-text="GEP" :choices="gepChoices" :selected="selected.gep" v-model="selected.gep" />
         </div>
-        <div class="w-1/6  sm:w-1/10 sm:block">
+        <!-- <div class="w-1/6  sm:w-1/10 sm:block">
             <InputsSelectMenu label-text="Affil." :choices="affilChoices" :selected="selected.affil"
                 v-model="selected.affil" />
+        </div> -->
+        <div class="w-[20%] sm:w-1/4">
+            <InputsSelectMenu label-text="Phase" :choices="phaseChoices" :selected="selected.phase"
+                v-model="selected.phase" />
         </div>
     </div>
 
     <div class="flex flex-row space-x-1 mt-6">
-        <div class="w-3/4 sm:w-3/4 ">
+        <div class="w-[90%] sm:w-3/4 ">
             <InputsAutoComplete label-text="Search School" :schools="schoolsForDisplay"
                 @update:selected-school="updateSchoolFilter" />
         </div>
-        <div class="w-1/4 sm:w-1/4">
-            <InputsSelectMenu label-text="Target Phase" :choices="phaseChoices" :selected="selected.phase"
-                v-model="selected.phase" />
-        </div>
+
         <div class="w-auto">
-            <MapPinIcon class="h-6 w-6 text-indigo-600 ml-2 mt-8" aria-hidden="true" @click="getLocation()" />
+            <MapPinIcon 
+                :class="['h-6 w-6 ml-2 mt-8',
+                sortByDistance ? 'text-indigo-600' : 'text-gray-400']"
+                aria-hidden="true" @click="getLocation()" />
         </div>
     </div>
 
@@ -106,20 +109,20 @@
                             <p class="text-xs text-gray-500 ">{{ Number(school.review_rating_avg) ?
                                 school.review_rating_avg.toFixed(2) : 'N/A' }}</p>
                         </div>
-                        <div class="flex items-center">
-                            <p class="text-xs leading-5 text-gray-500"> | </p>
-                            <ReceiptPercentIcon class="h-4 w-4 text-indigo-600 me-1 ml-1" />
-                            <p class="text-xs leading-5 text-gray-500 -ml-1">
-                                odds({{ selected.phase.name }}): {{ school.odds?.[selected.phase.name] ?
-                                    (school.odds[selected.phase.name] * 100).toFixed(0) : 'N/A' }}%</p>
-                        </div>
                     </div>
+                <div class="flex items-center">
+                    <ReceiptPercentIcon class="h-4 w-4 text-indigo-600" />
+                    <p class="text-xs leading-5 text-gray-500 ml-1">
+                        odds({{ selected.phase.name }}): {{ school.odds?.[selected.phase.name] ?
+                            (school.odds[selected.phase.name] * 100).toFixed(0) : 'N/A' }}%</p>
+                </div>
                     <p class="mt-1 flex text-xs leading-5 text-gray-500">
                         {{ school.address }} <span class="ml-3">({{ getGeoDistanceBand(lat, lon, school.latlon.lat,
                             school.latlon.lon, "km") }})</span>
                     </p>
                 </div>
             </div>
+
             <div class="flex items-center gap-x-4">
                 <ChevronRightIcon class="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
             </div>
@@ -142,9 +145,8 @@ const sapChoices = getSapList()
 const gepChoices = getGepList()
 const areaChoices = getAreaList()
 const affilChoices = getAffilList()
-const phaseChoices = [{ name: '2A' }, { name: '2B' }, { name: '2C' }, { name: '2C(S)' }]
-
-const data = ref(null)
+const phaseChoices = [{ name: '2A' }, { name: '2B' }, { name: '2C' }, { name: '2C(S)' }, { name: '3' }]
+const sortByDistance = ref(false)
 const lat = ref(null)
 const lon = ref(null)
 
@@ -181,21 +183,20 @@ const getGeoDistanceBand = (lat1, lon1, lat2, lon2) => {
     }
 }
 
-const getLocation = async() => {
+const getLocation = async () => {
     try {
         const { latitude, longitude } = await getLoc()
         console.log('User location:', latitude, longitude);
         lat.value = latitude
         lon.value = longitude
-        schools.value.forEach(school => {
+        schoolsForDisplay.value.forEach(school => {
             school.distance = haversineDistance(latitude, longitude, school.latlon.lat, school.latlon.lon, "km")
         })
-        schools.value.sort((a, b) => a.distance - b.distance)
+        schoolsForDisplay.value.sort((a, b) => a.distance - b.distance)
+        sortByDistance.value = true
     } catch (err) {
         console.error(err)
     }
-
-
 }
 
 const schoolsForDisplay = computed(() => {

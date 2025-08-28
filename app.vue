@@ -253,25 +253,13 @@ import {
 } from '@headlessui/vue'
 import {
   Bars3Icon,
-  BellIcon,
-  CalendarIcon,
-  ChartPieIcon,
-  Cog6ToothIcon,
-  DocumentDuplicateIcon,
-  FolderIcon,
   HomeIcon,
-  UsersIcon,
   XMarkIcon,
 } from '@heroicons/vue/24/outline'
-import { ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/vue/20/solid'
+import { ChevronDownIcon } from '@heroicons/vue/20/solid'
 
 const navigation = ref([
   { name: 'School List', href: '/', icon: HomeIcon, current: true },
-  // { name: 'By Area', href: '/areas', icon: UsersIcon, current: false },
-  // { name: 'Projects', href: '#', icon: FolderIcon, current: false },
-  // { name: 'Calendar', href: '#', icon: CalendarIcon, current: false },
-  // { name: 'Documents', href: '#', icon: DocumentDuplicateIcon, current: false },
-  // { name: 'Reports', href: '#', icon: ChartPieIcon, current: false },
 ])
 
 const qlinks = [
@@ -283,7 +271,6 @@ const qlinks = [
     id: 2, name: 'MOE P1 registration FAQ', href: 'https://www.moe.gov.sg/faq?categoryid=76037F9F568F46A7AA80EFDCE9AB23CD',
     initial: 'FAQ', current: false
   },
-  // { id: 3, name: 'Workcation', href: '#', initial: 'W', current: false },
 ]
 
 const projects = [
@@ -296,7 +283,6 @@ const projects = [
 const userNavigation = [
   { name: 'About me', href: 'https://www.ichaoran.com/about/' },
   { name: 'Other projects', href: 'https://www.ichaoran.com/projects/' },
-  // { name: 'Sign out', href: '#' },
   { name: 'Sponsor me', href: 'https://www.buymeacoffee.com/chaoran' }
 ]
 

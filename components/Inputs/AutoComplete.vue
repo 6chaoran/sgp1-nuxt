@@ -1,18 +1,25 @@
 <template>
     <Combobox v-model="selected" as="div" nullable >
       <ComboboxLabel class="block text-sm font-medium leading-6 text-gray-900">{{ labelText }}</ComboboxLabel>
-      <div class="relative mt-1 shadow-md">
+      <div class="relative mt-1">
         <div
           class="relative w-full cursor-default overflow-hidden rounded-md bg-white text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-300 sm:text-sm"
         >
           <ComboboxInput
-            class="w-full border border-gray-300 py-1.5 pl-3 pr-10 text-sm text-gray-900 rounded-lg focus:border-indigo-500 focus:ring-indigo-500"
+            class="w-full border !border-gray-300 h-8 pl-3 pr-10 text-sm text-gray-900 rounded-md focus:border-indigo-500 focus:ring-indigo-500"
             :displayValue="(person) => person?.name"
             @change="query = $event.target.value"
+            placeholder="Type to search..."
           />
           <ComboboxButton
             class="absolute inset-y-0 right-0 flex items-center pr-2 leading-6"
-          >
+          > 
+            <XCircleIcon
+              v-if="selected !== null"
+              class="h-5 w-5 text-gray-400 cursor-pointer"
+              aria-hidden="true"
+              @click="reset"
+               />
             <ChevronDownIcon
               class="h-5 w-5 text-gray-400"
               aria-hidden="true"
@@ -26,7 +33,7 @@
           @after-leave="query = ''"
         >
           <ComboboxOptions
-            class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-gray-200 focus:outline-none sm:text-sm"
+            class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-gray-300 focus:outline-none sm:text-sm"
           >
             <div
               v-if="filteredPeople.length === 0 && query !== ''"
@@ -44,7 +51,7 @@
               @click="$emit('update:selectedSchool', person.name)"
             >
               <li
-                class="relative cursor-default select-none py-1.5 pl-4 pr-4"
+                class="relative cursor-default select-none py-1.5 pl-3 pr-3 text-sm"
                 :class="{
                   'bg-indigo-600 text-white': active,
                   'text-gray-900': !active,
@@ -82,7 +89,7 @@ import {
   TransitionRoot,
   ComboboxLabel,
 } from '@headlessui/vue'
-import { CheckIcon, ChevronUpDownIcon, ChevronDownIcon } from '@heroicons/vue/20/solid'
+import { CheckIcon, ChevronDownIcon, XMarkIcon, XCircleIcon } from '@heroicons/vue/20/solid'
 const props = defineProps({
   // schoolList: Array
   labelText: String,
@@ -91,6 +98,12 @@ const props = defineProps({
     default: [{ id: 1, name: null}]
   }
 })
+
+const reset = () => {
+  selected.value = null
+  query.value = ''
+  emit('update:selectedSchool', null)
+}
 
 const emit = defineEmits(['update:selectedSchool'])
 
