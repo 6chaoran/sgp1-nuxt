@@ -15,13 +15,14 @@ of future admission.
 
 - **Application:** Nuxt 3, Vue 3, and TypeScript
 - **UI:** Tailwind CSS, Headless UI, Heroicons, and Inter
-- **Data and hosting:** Firebase Realtime Database, VueFire, Firebase Hosting,
-  and Firebase App Hosting configuration
+- **Data and hosting:** Firebase Realtime Database, VueFire, and Firebase App
+  Hosting
 - **Data visualization:** Apache ECharts
 - **Web platform:** Progressive Web App support, sitemap generation, and Google
   Analytics
 - **Quality:** ESLint, Vue TypeScript checking, and Playwright browser tests
-- **Delivery:** GitHub Actions with Firebase preview and production deployments
+- **Delivery:** GitHub Actions for pull-request validation and Firebase App
+  Hosting automatic production rollouts
 
 ## Redesign with Codex
 
@@ -67,8 +68,7 @@ The full implementation plan and its product rationale are recorded in
 
 ### First-time setup
 
-Use Node.js 20 LTS for the most predictable local build. Node.js 24 has
-previously caused the PWA/Workbox generation step to fail.
+Use Node.js 22 LTS to match CI and the Firebase App Hosting runtime.
 
 ```bash
 git clone git@github.com:6chaoran/sgp1-nuxt.git
@@ -97,10 +97,9 @@ npm run build
 npm run preview
 ```
 
-To test the Firebase build with the local Firebase emulator:
+To test with the Firebase App Hosting emulator:
 
 ```bash
-npm run build -- --preset=firebase
 npx firebase-tools emulators:start
 ```
 
@@ -132,11 +131,20 @@ SGP1_BASE_URL=https://example.com npm run verify:phase6
 
 ### Deploy
 
-Deployment is handled by the workflows in `.github/workflows/`:
+Pull requests run the App Hosting-targeted build in
+`.github/workflows/firebase-hosting-pull-request.yml`. App Hosting does not
+provide the temporary per-PR preview channels offered by classic Firebase
+Hosting, so review the PR checks and test locally before merging.
 
-- Pushing a branch and opening a pull request runs the Firebase preview
-  deployment workflow.
-- Merging the pull request into `main` triggers the live Firebase deployment.
+Production deployment is handled by the Firebase App Hosting GitHub
+integration. Complete this one-time setup in the Firebase console:
+
+1. Open **Hosting & Serverless → App Hosting** in project `sgp1-79c40`.
+2. Open backend `sgp1` and go to **Settings → Deployment**.
+3. Connect the GitHub repository `6chaoran/sgp1-nuxt`.
+4. Set the app root directory to `/`, the live branch to `main`, and enable
+   automatic rollouts.
+5. Select Node.js 22 and finish the first rollout.
 
 Recommended release flow:
 
@@ -149,18 +157,27 @@ git commit -m "Describe the change"
 git push -u origin feature/short-description
 ```
 
-Open a pull request on GitHub, check the preview deployment, and merge it into
-`main` when it looks correct. The
-[`firebase-hosting-merge.yml`](.github/workflows/firebase-hosting-merge.yml)
-workflow builds the project and deploys it to Firebase project
-`sgp1-79c40`.
+Open a pull request on GitHub, confirm the validation workflow passes, test the
+branch locally, and merge it into `main` when it looks correct. The App Hosting
+GitHub integration then builds the Nuxt SSR application and rolls it out to
+backend `sgp1`.
 
-If already working directly on `main`, pushing it triggers the same live
-deployment:
+If already working directly on `main`, pushing it triggers the same automatic
+rollout:
 
 ```bash
 git push origin main
 ```
 
-Prefer the pull-request flow so the preview and automated checks can catch
-problems before production.
+Prefer the pull-request flow so the automated checks can catch problems before
+production.
+
+For an exceptional manual deployment from the checked-out source, first log in
+to Firebase, then run:
+
+```bash
+npx firebase-tools deploy \
+  --only apphosting:sgp1 \
+  --project sgp1-79c40 \
+  --runtime nodejs22
+```
