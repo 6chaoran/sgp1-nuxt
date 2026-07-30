@@ -4,3 +4,10 @@ node_modules
 .env
 hosting.*
 data
+
+# Keep only Markdown files under docs: ignore everything, then whitelist .md and directories
+/docs/**
+!/docs/**/*.md
+!/docs/**/
+
+.*

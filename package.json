@@ -4,13 +4,31 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
+    "capture:baseline": "node scripts/capture-phase1.mjs",
+    "capture:phase2": "SGP1_CAPTURE_PHASE=phase-2 node scripts/capture-phase1.mjs",
+    "capture:phase3": "SGP1_CAPTURE_PHASE=phase-3 node scripts/capture-phase1.mjs",
+    "capture:phase3:states": "node scripts/capture-phase3-states.mjs",
+    "capture:phase4": "SGP1_CAPTURE_PHASE=phase-4 node scripts/capture-phase1.mjs",
+    "capture:phase4:states": "node scripts/capture-phase4-states.mjs",
+    "capture:phase5": "SGP1_CAPTURE_PHASE=phase-5 node scripts/capture-phase1.mjs",
+    "capture:phase5:states": "node scripts/capture-phase5-states.mjs",
+    "audit:phase6": "node scripts/audit-phase6.mjs",
+    "qa:phase6": "node scripts/create-phase6-qa-comparisons.mjs",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
+    "lint": "eslint .",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck",
+    "verify:phase2": "node scripts/verify-phase2.mjs",
+    "verify:phase3": "node scripts/verify-phase3.mjs",
+    "verify:phase4": "node scripts/verify-phase4.mjs",
+    "verify:phase5": "node scripts/verify-phase5.mjs",
+    "verify:phase6": "node scripts/verify-phase6.mjs"
   },
   "dependencies": {
     "@firebase/app-types": "^0.9.3",
+    "@fontsource-variable/inter": "^5.3.0",
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
     "@nuxt/eslint": "1.9.0",
@@ -29,11 +47,11 @@
     "pinia": "^3.0.3",
     "typescript": "^5.9.2",
     "vue": "^3.5.18",
-    "vue-router": "^4.5.1",
-    "vuetify": "^3.7.0",
-    "vuetify-nuxt-module": "0.18.7" 
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "@nuxtjs/tailwindcss": "^6.14.0"
+    "@nuxtjs/tailwindcss": "^6.14.0",
+    "playwright": "^1.62.0",
+    "vue-tsc": "^3.3.8"
   }
 }
