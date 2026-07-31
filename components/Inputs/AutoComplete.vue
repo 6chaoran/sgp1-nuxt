@@ -1,27 +1,29 @@
 <template>
-    <Combobox v-model="selected" as="div" nullable >
-      <ComboboxLabel class="block text-sm font-medium leading-6 text-gray-900">{{ labelText }}</ComboboxLabel>
-      <div class="relative mt-1">
+    <Combobox v-model="selected" as="div" nullable>
+      <ComboboxLabel class="ui-label">{{ labelText }}</ComboboxLabel>
+      <div class="relative mt-1.5">
         <div
-          class="relative w-full cursor-default overflow-hidden rounded-md bg-white text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-300 sm:text-sm"
+          class="relative w-full cursor-default overflow-hidden rounded-md bg-neutral-0 text-left"
         >
           <ComboboxInput
-            class="w-full border !border-gray-300 h-8 pl-3 pr-10 text-sm text-gray-900 rounded-md focus:border-indigo-500 focus:ring-indigo-500"
-            :displayValue="(person) => person?.name"
+            class="ui-control pr-11"
+            :display-value="person => person?.name"
             @change="query = $event.target.value"
             placeholder="Type to search..."
           />
           <ComboboxButton
-            class="absolute inset-y-0 right-0 flex items-center pr-2 leading-6"
-          > 
+            class="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-md text-neutral-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20"
+            aria-label="Toggle school suggestions"
+          >
             <XCircleIcon
               v-if="selected !== null"
-              class="h-5 w-5 text-gray-400 cursor-pointer"
+              class="h-5 w-5 cursor-pointer text-neutral-500"
               aria-hidden="true"
               @click="reset"
                />
             <ChevronDownIcon
-              class="h-5 w-5 text-gray-400"
+              v-else
+              class="h-5 w-5 text-neutral-500"
               aria-hidden="true"
             />
           </ComboboxButton>
@@ -33,11 +35,11 @@
           @after-leave="query = ''"
         >
           <ComboboxOptions
-            class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-gray-300 focus:outline-none sm:text-sm"
+            class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-neutral-200 bg-neutral-0 py-1 text-base shadow-overlay focus:outline-none sm:text-sm"
           >
             <div
               v-if="filteredPeople.length === 0 && query !== ''"
-              class="relative cursor-default select-none px-4 py-1.5 text-gray-700"
+              class="relative cursor-default select-none px-4 py-2.5 text-neutral-700"
             >
               Nothing found.
             </div>
@@ -51,10 +53,10 @@
               @click="$emit('update:selectedSchool', person.name)"
             >
               <li
-                class="relative cursor-default select-none py-1.5 pl-3 pr-3 text-sm"
+                class="relative cursor-default select-none py-2.5 pl-3 pr-3 text-sm"
                 :class="{
-                  'bg-indigo-600 text-white': active,
-                  'text-gray-900': !active,
+                  'bg-brand-600 text-white': active,
+                  'text-neutral-900': !active,
                 }"
               >
                 <span
@@ -66,7 +68,7 @@
                 <span
                   v-if="selected"
                   class="absolute inset-y-0 left-0 flex items-center pl-3"
-                  :class="{ 'text-white': active, 'text-indigo-600': !active }"
+                  :class="{ 'text-white': active, 'text-brand-600 dark:text-brand-400': !active }"
                 >
                   <CheckIcon class="h-5 w-5" aria-hidden="true" />
                 </span>
@@ -79,24 +81,24 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
 import {
   Combobox,
-  ComboboxInput,
   ComboboxButton,
-  ComboboxOptions,
-  ComboboxOption,
-  TransitionRoot,
+  ComboboxInput,
   ComboboxLabel,
+  ComboboxOption,
+  ComboboxOptions,
+  TransitionRoot,
 } from '@headlessui/vue'
-import { CheckIcon, ChevronDownIcon, XMarkIcon, XCircleIcon } from '@heroicons/vue/20/solid'
+import { CheckIcon, ChevronDownIcon, XCircleIcon } from '@heroicons/vue/20/solid'
+import { computed, ref } from 'vue'
 const props = defineProps({
   // schoolList: Array
   labelText: String,
   schools: {
     type: Array,
-    default: [{ id: 1, name: null}]
-  }
+    default: () => [{ id: 1, name: null }],
+  },
 })
 
 const reset = () => {
@@ -107,10 +109,10 @@ const reset = () => {
 
 const emit = defineEmits(['update:selectedSchool'])
 
-let selected = ref(null)
-let query = ref('')
+const selected = ref(null)
+const query = ref('')
 
-let filteredPeople = computed(() =>
+const filteredPeople = computed(() =>
   query.value === ''
     ? props.schools
     : props.schools.filter((person) =>

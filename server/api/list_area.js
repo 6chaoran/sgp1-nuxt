@@ -1,5 +1,5 @@
 
-export default defineEventHandler((event) => {
+export default defineEventHandler(() => {
   const names = [
     {name: 'Ang Mo Kio'},
     {name: 'Bedok'},
@@ -31,4 +31,3 @@ export default defineEventHandler((event) => {
   ]
   return names
 })
-

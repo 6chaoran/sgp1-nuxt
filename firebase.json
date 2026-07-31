@@ -1,7 +1,7 @@
 {
   "apphosting": {
     "backendId": "sgp1",
-    "rootDir": "/",
+    "rootDir": ".",
     "ignore": [
       "node_modules",
       ".git",
@@ -11,12 +11,9 @@
     ],
     "alwaysDeployFromSource": true
   },
-  "hosting": {
-    "public": ".output/public",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ]
+  "emulators": {
+    "apphosting": {
+      "rootDirectory": "."
+    }
   }
 }

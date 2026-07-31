@@ -1,22 +1,12 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  devtools: { enabled: true },
-  nitro: {
-    firebase: {
-      gen: 2,
-      httpsOptions: {
-        region: 'asia-east1',
-        maxInstances: 1,
-      },
-      nodeVersion: '18' // Can be '16' or '18' or '20'
-    },
-  },
+  css: ['@fontsource-variable/inter'],
+  devtools: { enabled: false },
   modules: [
     '@nuxtjs/tailwindcss',
     '@nuxt/image',
     'nuxt-gtag',
     '@nuxt/eslint',
-    'vuetify-nuxt-module',
     '@vite-pwa/nuxt',
     '@nuxtjs/sitemap',
     '@pinia/nuxt',
@@ -36,23 +26,6 @@ export default defineNuxtConfig({
       // there could be other properties depending on the project
     },
   },
-  vuetify: {
-    /* vuetify options */
-    vuetifyOptions: {
-      // @TODO: list all vuetify options
-    },
-
-    moduleOptions: {
-      /* nuxt-vuetify module options */
-      treeshaking: true, // | false,
-      useIconCDN: true, //| false,
-
-      /* vite-plugin-vuetify options */
-      styles: true, //| 'none' | 'expose' | 'sass' | { configFile: string },
-      autoImport: true, //| false,
-      useVuetifyLabs: true, // | false, 
-    }
-  },
   gtag: {
     id: 'G-8XTQL3RC8B',
     config: {
@@ -61,6 +34,7 @@ export default defineNuxtConfig({
   },
   
   tailwindcss: {
+    cssPath: '~/assets/css/main.css',
     exposeConfig: true,
     viewer: true,
     // and more...
@@ -68,9 +42,16 @@ export default defineNuxtConfig({
    pwa: {
     registerType: 'autoUpdate',
     manifest: {
-      name: 'SGP1 Companion',
+      name: 'SGP1 – Singapore Primary 1 Planning Companion',
       short_name: 'SGP1',
-      theme_color: '#ffffff',
+      description: 'Explore historical Singapore Primary 1 ballot information by school, year, and admission phase.',
+      lang: 'en-SG',
+      start_url: '/',
+      scope: '/',
+      display: 'standalone',
+      theme_color: '#3437c7',
+      background_color: '#ffffff',
+      categories: ['education', 'reference'],
       icons: [
         {
           src: 'android-icon-192x192.png',
@@ -91,7 +72,7 @@ export default defineNuxtConfig({
           src: 'ms-icon-310x310.png',
           sizes: '310x310',
           type: 'image/png',
-          purpose: 'any maskable',
+          purpose: 'maskable',
         },
       ],
     },

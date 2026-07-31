@@ -1,49 +1,93 @@
 <template>
-  <TransitionRoot as="template" :show="appStore.showReviewModel">
-    <Dialog as="div" class="relative z-10" @close="appStore.showReviewModel = false">
-      <TransitionChild as="template" enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
-        leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+  <TransitionRoot
+    as="template"
+    :show="appStore.showReviewModel"
+    @after-leave="restoreFocus"
+  >
+    <Dialog
+      as="div"
+      class="relative z-50"
+      @close="closeDialog"
+    >
+      <TransitionChild
+        as="template"
+        enter="transition-opacity duration-normal ease-product"
+        enter-from="opacity-0"
+        enter-to="opacity-100"
+        leave="transition-opacity duration-normal ease-product"
+        leave-from="opacity-100"
+        leave-to="opacity-0"
+      >
+        <div class="fixed inset-0 bg-neutral-950/45" aria-hidden="true" />
       </TransitionChild>
-      <div class="fixed top-[8rem] inset-0 z-10 w-screen overflow-y-auto">
-        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-          <TransitionChild as="template" enter="ease-out duration-300"
-            enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
-            leave-from="opacity-100 translate-y-0 sm:scale-100"
-            leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+
+      <div class="fixed inset-0 overflow-y-auto p-4 sm:p-6">
+        <div class="flex min-h-full items-center justify-center">
+          <TransitionChild
+            as="template"
+            enter="transition duration-normal ease-product"
+            enter-from="translate-y-2 scale-95 opacity-0"
+            enter-to="translate-y-0 scale-100 opacity-100"
+            leave="transition duration-normal ease-product"
+            leave-from="translate-y-0 scale-100 opacity-100"
+            leave-to="translate-y-2 scale-95 opacity-0"
+          >
             <DialogPanel
-              class="w-full transform overflow-auto rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-              <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                <div class="sm:flex sm:items-start">
-                  <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                    <DialogTitle as="h3" class="text-base font-semibold leading-6 text-gray-900 ">Google Maps Review
-                    </DialogTitle>
-                    <div class="mt-2">
-                      <ul role="list" class="divide-y divide-gray-100">
-                        <li v-for="(review, i) in reviews" class="text-left text-sm text-gray-500 gap-x-6 py-5"
-                          :key="i">
-                          <v-col class="-mb-2">
-                            <v-row>
-                              <strong>{{ review.username }}</strong>
-                              <v-spacer></v-spacer>{{ datediff(review.timestamp) }}
-                            </v-row>
-                            <v-row class="mb-1"><v-rating :model-value="review.rating" :size="14" :length="5"
-                                color="yellow-darken-2" density="comfortable" readonly></v-rating></v-row>
-                            <v-row>{{ review.caption }}</v-row>
-                          </v-col>
-                        </li>
-                      </ul>
-
-                    </div>
-                  </div>
+              class="flex max-h-[calc(100vh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-xl bg-neutral-0 text-left shadow-overlay sm:max-h-[min(44rem,calc(100vh-3rem))]"
+            >
+              <div class="flex items-start justify-between gap-4 border-b border-neutral-200 px-5 py-4 sm:px-6">
+                <div>
+                  <DialogTitle as="h2" class="text-lg font-bold text-neutral-900">
+                    Google Maps reviews
+                  </DialogTitle>
+                  <p class="mt-1 text-sm leading-5 text-neutral-600">
+                    General reviews are separate from registration history.
+                  </p>
                 </div>
-
+                <UiIconButton label="Close reviews" @click="closeDialog">
+                  <XMarkIcon />
+                </UiIconButton>
               </div>
-              <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                <button type="button"
-                  class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                  @click="appStore.showReviewModel = false" ref="cancelButtonRef">Close</button>
+
+              <div class="min-h-0 flex-1 overflow-y-auto px-5 sm:px-6">
+                <ul role="list" class="divide-y divide-neutral-200">
+                  <li
+                    v-for="(review, index) in reviews"
+                    :key="review.id || `${review.username}-${index}`"
+                    class="space-y-2 py-5 text-left text-sm text-neutral-600"
+                  >
+                    <div class="flex items-start justify-between gap-4">
+                      <strong class="min-w-0 break-words text-neutral-800">
+                        {{ review.username || 'Google reviewer' }}
+                      </strong>
+                      <span class="shrink-0 text-xs text-neutral-500">
+                        {{ datediff(review.timestamp) }}
+                      </span>
+                    </div>
+                    <div
+                      class="flex items-center gap-0.5"
+                      role="img"
+                      :aria-label="`${review.rating || 0} out of 5 stars`"
+                    >
+                      <StarIcon
+                        v-for="star in 5"
+                        :key="star"
+                        :class="[
+                          'h-4 w-4',
+                          Number(review.rating) >= star ? 'text-warning-600' : 'text-neutral-300',
+                        ]"
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <p class="break-words leading-6">{{ review.caption }}</p>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="border-t border-neutral-200 bg-neutral-50 px-5 py-3 sm:flex sm:justify-end sm:px-6">
+                <UiButton block variant="secondary" class="sm:w-auto" @click="closeDialog">
+                  Close
+                </UiButton>
               </div>
             </DialogPanel>
           </TransitionChild>
@@ -53,40 +97,80 @@
   </TransitionRoot>
 </template>
 
-<script setup>
-import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
-// import { $on } from 'vue-happy-bus';
+<script setup lang="ts">
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  TransitionChild,
+  TransitionRoot,
+} from '@headlessui/vue'
+import { StarIcon } from '@heroicons/vue/20/solid'
+import { XMarkIcon } from '@heroicons/vue/24/outline'
+
+interface Review {
+  id?: string
+  username?: string
+  rating?: string | number
+  timestamp?: string | number
+  caption?: string
+}
+
+withDefaults(defineProps<{
+  schoolId?: string
+  reviews?: Review[]
+}>(), {
+  schoolId: '',
+  reviews: () => [],
+})
+
 const appStore = useAppStore()
-const props = defineProps({
-  schoolId: String,
-  reviews: {
-    type: Array,
-    default: () => []
+let triggerElement: HTMLElement | null = null
+const closeDialog = () => {
+  appStore.showReviewModel = false
+}
+const restoreFocus = () => {
+  const trigger = triggerElement
+  window.setTimeout(() => {
+    if (trigger?.isConnected) {
+      trigger.focus()
+    }
+  }, 0)
+  triggerElement = null
+}
+
+watch(() => appStore.showReviewModel, (isOpen) => {
+  if (isOpen && document.activeElement instanceof HTMLElement) {
+    triggerElement = document.activeElement
   }
 })
 
-const datediff = (date) => {
-  const today = new Date()
-  const ts = new Date(date)
-  const diff = new Date(today.getTime() - ts.getTime())
-  const days = diff.getUTCDate()
-  const months = diff.getUTCMonth()
-  const years = diff.getUTCFullYear() - 1970
-  // console.log(`${ts} ${years} ${months} ${days}`)
-  if (years == 0 && months == 0 && days < 7) {
-    const unit = days == 1 ? 'day' : 'days'
-    return `${days} ${unit} ago`
-  } else if (years == 0 && months == 0) {
-    const weeks = (days / 7).toFixed(0)
-    const unit = weeks == 1 ? 'week' : 'weeks'
-    return `${weeks} ${unit} ago`
-  } else if (years == 0) {
-    const unit = months == 1 ? 'month' : 'months'
-    return `${months} ${unit} ago`
-  } else {
-    const unit = years == 1 ? 'year' : 'years'
-    return `${years} ${unit} ago`
+const datediff = (value: string | number | undefined) => {
+  if (!value) {
+    return 'Date unavailable'
   }
-}
 
+  const timestamp = new Date(value)
+  if (Number.isNaN(timestamp.getTime())) {
+    return 'Date unavailable'
+  }
+
+  const elapsedDays = Math.max(
+    0,
+    Math.floor((Date.now() - timestamp.getTime()) / 86_400_000),
+  )
+  if (elapsedDays < 7) {
+    return `${elapsedDays} ${elapsedDays === 1 ? 'day' : 'days'} ago`
+  }
+  if (elapsedDays < 31) {
+    const weeks = Math.max(1, Math.round(elapsedDays / 7))
+    return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`
+  }
+  if (elapsedDays < 365) {
+    const months = Math.max(1, Math.round(elapsedDays / 30))
+    return `${months} ${months === 1 ? 'month' : 'months'} ago`
+  }
+  const years = Math.max(1, Math.round(elapsedDays / 365))
+  return `${years} ${years === 1 ? 'year' : 'years'} ago`
+}
 </script>

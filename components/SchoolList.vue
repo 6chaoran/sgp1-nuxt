@@ -1,250 +1,794 @@
 <template>
-    <div>
-        <p id="output"></p>
-        <h2 class="font-semibold text-indigo-600">Intro
-            <span><v-icon :class="['transition', showIntro ? '' : 'rotate-180']" icon="mdi-chevron-double-down"
-                    color="indigo-600" size="20px" @click="showIntro = !showIntro"></v-icon></span>
-        </h2>
-        <div v-show="showIntro" class="text-sm justify text-gray-600 mt-2 space-y-2">
-            <p>
-                I know, I know — "every primary school is a good school." But kiasu parents still carefully plan their
-                strategies for their little ones' Primary One registration. Some questions clearly bother the parents:
-                Should I join the parent volunteer program now to secure a spot in the 2B round?
-                Should I move to another district that is less competitive for P1 applications?
+  <div>
+    <div class="lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-7">
+      <aside class="hidden lg:block" aria-label="School filters">
+        <div class="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto overscroll-contain rounded-xl border border-neutral-200 bg-neutral-0 p-5 shadow-control">
+          <SchoolFilterFields
+            v-model:area="area"
+            v-model:phase="phase"
+            v-model:sap="sap"
+            v-model:gep="gep"
+            v-model:boys="boys"
+            v-model:girls="girls"
+            v-model:affiliated="affiliated"
+            :location-status="locationStatus"
+            :location-message="locationMessage"
+            @request-location="requestLocation"
+            @clear-location="clearLocation"
+          />
+
+          <button
+            type="button"
+            class="mt-3 inline-flex min-h-11 items-center rounded-md text-sm font-semibold text-brand-700 underline decoration-brand-200 underline-offset-4 hover:text-brand-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20 dark:text-brand-300 dark:hover:text-brand-200"
+            @click="resetFilters"
+          >
+            Clear all filters
+          </button>
+        </div>
+      </aside>
+
+      <div class="min-w-0">
+        <section
+          class="relative overflow-hidden rounded-xl border border-neutral-200 bg-[hsl(var(--color-warm-surface))] px-5 py-7 sm:px-8 sm:py-9"
+          aria-labelledby="discovery-heading"
+        >
+          <div class="relative z-10 max-w-2xl">
+            <p class="text-sm font-semibold text-brand-700 dark:text-brand-300">
+              Singapore Primary 1 registration
             </p>
-            <p>
-                I hope this tool provides some numerical insights to help with your important decisions.
-                And finally, may your child get into the school of your dreams!
+            <h1
+              id="discovery-heading"
+              class="mt-2 text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl"
+            >
+              Plan with past registration data
+            </h1>
+            <p class="mt-3 max-w-xl text-sm leading-6 text-neutral-600 sm:text-base">
+              Explore historical ballot information by school and admission phase
+              to support your family’s planning.
             </p>
+          </div>
+          <img
+            src="/school-planning-illustration-transparent.png"
+            width="1200"
+            height="600"
+            class="absolute -bottom-10 right-0 hidden h-56 w-[28rem] object-contain object-right xl:block"
+            alt=""
+          >
+        </section>
 
-
-        </div>
-
-    </div>
-    <v-divider class="my-3"></v-divider>
-    <div class="flex flex-row space-x-1">
-        <div class="w-[40%] sm:w-1/2">
-            <InputsSelectMenu label-text="Area" :choices="areaChoices" :selected="selected.area"
-                v-model="selected.area" />
-        </div>
-        <div class="w-[20%] sm:w-1/6">
-            <InputsSelectMenu label-text="SAP" :choices="sapChoices" :selected="selected.sap" v-model="selected.sap" />
-        </div>
-        <div class="w-[20%]  sm:w-1/6">
-            <InputsSelectMenu label-text="GEP" :choices="gepChoices" :selected="selected.gep" v-model="selected.gep" />
-        </div>
-        <!-- <div class="w-1/6  sm:w-1/10 sm:block">
-            <InputsSelectMenu label-text="Affil." :choices="affilChoices" :selected="selected.affil"
-                v-model="selected.affil" />
-        </div> -->
-        <div class="w-[20%] sm:w-1/4">
-            <InputsSelectMenu label-text="Phase" :choices="phaseChoices" :selected="selected.phase"
-                v-model="selected.phase" />
-        </div>
-    </div>
-
-    <div class="flex flex-row space-x-1 mt-6">
-        <div class="w-[90%] sm:w-3/4 ">
-            <InputsAutoComplete label-text="Search School" :schools="schoolsForDisplay"
-                @update:selected-school="updateSchoolFilter" />
+        <div class="relative mt-6">
+          <UiTextField
+            v-model="searchQuery"
+            type="search"
+            label="Search schools"
+            placeholder="Search by school name, address, or area"
+            clearable
+            autocomplete="off"
+          />
         </div>
 
-        <div class="w-auto">
-            <MapPinIcon 
-                :class="['h-6 w-6 ml-2 mt-8',
-                sortByDistance ? 'text-indigo-600' : 'text-gray-400']"
-                aria-hidden="true" @click="getLocation()" />
+        <div class="mt-3 flex items-end gap-3 lg:hidden">
+          <UiButton
+            ref="mobileFiltersTrigger"
+            variant="secondary"
+            class="flex-1"
+            @click="openMobileFilters"
+          >
+            <template #leading>
+              <AdjustmentsHorizontalIcon class="h-5 w-5" aria-hidden="true" />
+            </template>
+            Filters
+            <span
+              v-if="nonDefaultFilterCount"
+              class="rounded-full bg-brand-100 px-2 py-0.5 text-xs text-brand-800 dark:bg-brand-900 dark:text-brand-200"
+            >
+              {{ nonDefaultFilterCount }}
+            </span>
+          </UiButton>
+          <div class="min-w-0 flex-1">
+            <UiSelectField
+              v-model="sort"
+              label="Sort results"
+              :options="sortOptions"
+            />
+          </div>
         </div>
-    </div>
 
-    <div class="mt-3 ml-1">
-        {{ schoolsForDisplay.length }} schools are selected
-    </div>
-    <ul role="list" class="divide-y divide-gray-100">
-        <li v-for="school in schoolsForDisplay" :key="school.sid" class="relative flex justify-between gap-x-6 py-5">
-            <div class="flex gap-x-4">
-                <img class="h-12 w-12 flex-none rounded-full bg-gray-50" loading="lazy" width="48px" height="48px"
-                    :src="school.logo_url2 ? '/school_logo/' + school.logo_url2 : school.logo_url"
-                    :alt="'logo of ' + school.name" />
-                <div class="min-w-0 flex-auto">
-                    <p class="text-sm font-semibold leading-6 text-gray-900">
-                        <a :href="`/schools/${school.sid}`">
-                            <span class="absolute inset-x-0 -top-px bottom-0" />
-                            {{ school.name }}
-                        </a>
-                        <br></br>
-                        <span v-if="school['type_gep']"
-                            class="inline-flex items-center rounded-full bg-purple-50 mx-2 px-2 py-1 text-xs font-medium text-purple-600 ring-1 ring-inset ring-purple-500/10">
-                            GEP
-                        </span>
-                        <span v-if="school.type_sap"
-                            class="inline-flex items-center rounded-full bg-purple-50 mx-2 px-2 py-1 text-xs font-medium text-purple-600 ring-1 ring-inset ring-purple-500/10">
-                            SAP
-                        </span>
-                        <span v-if="school['type_girls-only']"
-                            class="inline-flex items-center rounded-full bg-pink-50 mx-2 px-2 py-1 text-xs font-medium text-pink-600 ring-1 ring-inset ring-pink-500/10">
-                            Girls
-                        </span>
-                        <span v-if="school['type_boys-only']"
-                            class="inline-flex items-center rounded-full bg-blue-50 mx-2 px-2 py-1 text-xs font-medium text-blue-600 ring-1 ring-inset ring-blue-500/10">
-                            Boys
-                        </span>
-                        <span v-if="school['affiliations'] != '-'"
-                            class="inline-flex items-center rounded-full bg-blue-50 mx-2 px-2 py-1 text-xs font-medium text-green-600 ring-1 ring-inset ring-green-500/10">
-                            Affil.
-                        </span>
-                    </p>
-                    <div class="mt-1 flex items-center gap-x-1.5">
-                        <div class="flex-none rounded-full bg-emerald-500/20 p-1">
-                            <div class="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        </div>
-                        <p class="text-xs leading-5 text-gray-500">{{ school.area }} |</p>
-                        <div class="flex items-center">
-                            <svg class="w-4 h-4 text-yellow-300 me-1" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
-                                <path
-                                    d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
-                            </svg>
-                            <!-- rating -->
-                            <p class="text-xs text-gray-500 ">{{ Number(school.review_rating_avg) ?
-                                school.review_rating_avg.toFixed(2) : 'N/A' }}</p>
-                        </div>
+        <div
+          class="mt-4 flex flex-wrap items-center gap-2 rounded-lg border border-brand-100 bg-brand-50/70 p-3 dark:border-brand-900 dark:bg-brand-950/70"
+          aria-label="Active filters"
+        >
+          <span class="mr-1 text-sm font-semibold text-neutral-700">Active filters:</span>
+          <UiFilterChip
+            v-if="area !== 'All'"
+            :label="`Area: ${area}`"
+            removable
+            @remove="area = 'All'"
+          />
+          <UiBadge v-else variant="neutral">All areas</UiBadge>
+          <UiFilterChip
+            v-if="phase !== defaultPhase"
+            :label="`Admission phase: ${phase}`"
+            removable
+            @remove="phase = defaultPhase"
+          />
+          <UiBadge v-else variant="neutral">Phase {{ defaultPhase }}</UiBadge>
+          <UiFilterChip
+            v-if="sap"
+            label="SAP"
+            removable
+            @remove="sap = false"
+          />
+          <UiFilterChip
+            v-if="gep"
+            label="GEP"
+            removable
+            @remove="gep = false"
+          />
+          <UiFilterChip
+            v-if="boys"
+            label="Boys"
+            removable
+            @remove="boys = false"
+          />
+          <UiFilterChip
+            v-if="girls"
+            label="Girls"
+            removable
+            @remove="girls = false"
+          />
+          <UiFilterChip
+            v-if="affiliated"
+            label="Affiliated"
+            removable
+            @remove="affiliated = false"
+          />
+          <UiFilterChip
+            v-if="sort === 'distance' && locationStatus === 'ready'"
+            label="Nearest first"
+            removable
+            @remove="sort = 'name'"
+          />
+          <button
+            v-if="hasResettableState"
+            type="button"
+            class="ml-auto min-h-11 rounded-md px-2 text-sm font-semibold text-brand-700 hover:text-brand-900 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20 dark:text-brand-300 dark:hover:text-brand-100"
+            @click="resetAll"
+          >
+            Reset all
+          </button>
+        </div>
+
+        <div class="mt-6 items-end justify-between gap-5 sm:flex">
+          <div>
+            <p
+              class="text-lg font-bold text-neutral-900"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {{ resultSummary }}
+            </p>
+            <div class="mt-2 flex max-w-xl items-start gap-2 text-sm leading-5 text-neutral-600">
+              <InformationCircleIcon class="mt-0.5 h-5 w-5 shrink-0 text-brand-600 dark:text-brand-400" aria-hidden="true" />
+              <p>
+                <strong class="font-semibold text-neutral-800">Historical allocation rate</strong>
+                is places taken divided by applications for {{ phase }}. It
+                describes a past result, not a forecast or guarantee.
+              </p>
+            </div>
+          </div>
+          <div class="mt-4 hidden w-52 shrink-0 lg:block">
+            <UiSelectField
+              v-model="sort"
+              label="Sort results"
+              :options="sortOptions"
+            />
+          </div>
+        </div>
+
+        <UiStatusMessage
+          v-if="locationStatus === 'denied'"
+          class="mt-5"
+          variant="warning"
+          title="Location permission was denied"
+        >
+          Enable location access in your browser settings, then try again.
+          <template #action>
+            <UiButton size="sm" variant="secondary" @click="requestLocation">
+              Try location again
+            </UiButton>
+          </template>
+        </UiStatusMessage>
+        <UiStatusMessage
+          v-else-if="locationStatus === 'unavailable' || locationStatus === 'error'"
+          class="mt-5"
+          variant="warning"
+          title="Location is unavailable"
+        >
+          {{ locationMessage }}
+          <template #action>
+            <UiButton size="sm" variant="secondary" @click="requestLocation">
+              Retry
+            </UiButton>
+          </template>
+        </UiStatusMessage>
+
+        <div
+          v-if="isLoading"
+          class="mt-6 space-y-3"
+          role="status"
+          aria-live="polite"
+          aria-label="Loading schools"
+        >
+          <span class="sr-only">Loading school results</span>
+          <div
+            v-for="index in 5"
+            :key="index"
+            class="flex items-center gap-4 rounded-lg border border-neutral-200 bg-neutral-0 p-4"
+          >
+            <UiSkeleton width="3rem" height="3rem" shape="circle" />
+            <div class="flex-1 space-y-2">
+              <UiSkeleton width="45%" height="1rem" />
+              <UiSkeleton width="70%" height="0.75rem" />
+            </div>
+            <UiSkeleton width="4rem" height="1.5rem" />
+          </div>
+        </div>
+
+        <UiStatusMessage
+          v-else-if="loadError"
+          class="mt-6"
+          variant="error"
+          title="We couldn’t load school information"
+        >
+          Check your connection and try again.
+          <template #action>
+            <UiButton size="sm" variant="secondary" @click="reloadPage">
+              Reload schools
+            </UiButton>
+          </template>
+        </UiStatusMessage>
+
+        <UiStatusMessage
+          v-else-if="sortedSchools.length === 0"
+          class="mt-6"
+          variant="empty"
+          title="No schools match these filters"
+        >
+          Try a broader search, choose another area, or reset the school
+          attributes.
+          <template #action>
+            <UiButton size="sm" variant="secondary" @click="resetAll">
+              Reset search and filters
+            </UiButton>
+          </template>
+        </UiStatusMessage>
+
+        <div v-else class="mt-6">
+          <div class="hidden xl:block">
+            <div
+              class="grid grid-cols-[minmax(16rem,2.4fr)_minmax(7rem,0.8fr)_minmax(13rem,1.4fr)_minmax(9rem,0.8fr)_1.5rem] gap-4 border-b border-neutral-300 px-3 pb-3 text-xs font-semibold text-neutral-600"
+            >
+              <span>School</span>
+              <span>Area</span>
+              <span>Address</span>
+              <span class="text-right">
+                Historical rate<br>
+                <span class="font-normal">({{ phase }})</span>
+              </span>
+              <span class="sr-only">Open school</span>
+            </div>
+            <ul role="list" class="divide-y divide-neutral-200">
+              <li v-for="school in sortedSchools" :key="school.sid">
+                <NuxtLink
+                  :to="`/schools/${school.sid}`"
+                  class="group grid min-h-28 grid-cols-[minmax(16rem,2.4fr)_minmax(7rem,0.8fr)_minmax(13rem,1.4fr)_minmax(9rem,0.8fr)_1.5rem] items-center gap-4 rounded-md px-3 py-4 transition-colors hover:bg-neutral-0 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20"
+                >
+                  <SchoolIdentity
+                    :school="school"
+                    :phase="phase"
+                    :failed="failedLogos.has(school.sid)"
+                    @logo-error="markLogoFailed(school.sid)"
+                  />
+                  <span class="text-sm text-neutral-600">{{ school.area }}</span>
+                  <span class="text-sm leading-5 text-neutral-600">
+                    {{ school.address }}
+                    <span
+                      v-if="distanceFor(school) !== null"
+                      class="mt-1 block text-xs font-medium text-brand-700 dark:text-brand-300"
+                    >
+                      {{ formatDistance(distanceFor(school)) }} away
+                    </span>
+                  </span>
+                  <span class="text-right text-lg font-semibold tabular-nums text-neutral-900">
+                    {{ formatRate(rateFor(school)) }}
+                  </span>
+                  <ChevronRightIcon
+                    class="h-5 w-5 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-600 dark:group-hover:text-brand-400"
+                    aria-hidden="true"
+                  />
+                </NuxtLink>
+              </li>
+            </ul>
+          </div>
+
+          <ul role="list" class="space-y-3 xl:hidden">
+            <li v-for="school in sortedSchools" :key="school.sid">
+              <NuxtLink
+                :to="`/schools/${school.sid}`"
+                class="block rounded-xl border border-neutral-200 bg-neutral-0 p-4 shadow-control transition-colors hover:border-brand-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20"
+              >
+                <div class="flex items-start gap-3">
+                  <SchoolLogo
+                    :school="school"
+                    :failed="failedLogos.has(school.sid)"
+                    @logo-error="markLogoFailed(school.sid)"
+                  />
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-start justify-between gap-3">
+                      <h2 class="text-sm font-bold leading-5 text-neutral-900">
+                        {{ school.name }}
+                      </h2>
+                      <div class="shrink-0 text-right">
+                        <p class="text-lg font-semibold tabular-nums text-neutral-900">
+                          {{ formatRate(rateFor(school)) }}
+                        </p>
+                        <p class="text-[0.6875rem] font-medium text-neutral-500">
+                          {{ phase }} historical
+                        </p>
+                      </div>
                     </div>
-                <div class="flex items-center">
-                    <ReceiptPercentIcon class="h-4 w-4 text-indigo-600" />
-                    <p class="text-xs leading-5 text-gray-500 ml-1">
-                        odds({{ selected.phase.name }}): {{ school.odds?.[selected.phase.name] ?
-                            (school.odds[selected.phase.name] * 100).toFixed(0) : 'N/A' }}%</p>
-                </div>
-                    <p class="mt-1 flex text-xs leading-5 text-gray-500">
-                        {{ school.address }} <span class="ml-3">({{ getGeoDistanceBand(lat, lon, school.latlon.lat,
-                            school.latlon.lon, "km") }})</span>
+                    <SchoolBadges :school="school" class="mt-2" />
+                    <p class="mt-2 text-xs leading-5 text-neutral-600">
+                      {{ school.area }} · {{ school.address }}
                     </p>
+                    <p
+                      v-if="distanceFor(school) !== null"
+                      class="mt-1 text-xs font-semibold text-brand-700 dark:text-brand-300"
+                    >
+                      {{ formatDistance(distanceFor(school)) }} away
+                    </p>
+                  </div>
                 </div>
-            </div>
+              </NuxtLink>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
 
-            <div class="flex items-center gap-x-4">
-                <ChevronRightIcon class="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
-            </div>
-        </li>
-    </ul>
+    <TransitionRoot
+      as="template"
+      :show="mobileFiltersOpen"
+      @after-leave="restoreMobileFiltersFocus"
+    >
+      <Dialog
+        as="div"
+        class="fixed inset-0 z-50 lg:hidden"
+        @close="mobileFiltersOpen = false"
+      >
+        <TransitionChild
+          as="template"
+          enter="transition-opacity duration-normal ease-product"
+          enter-from="opacity-0"
+          enter-to="opacity-100"
+          leave="transition-opacity duration-normal ease-product"
+          leave-from="opacity-100"
+          leave-to="opacity-0"
+        >
+          <div class="fixed inset-0 bg-neutral-950/40" />
+        </TransitionChild>
+        <div class="fixed inset-0 flex items-end sm:items-stretch sm:justify-end">
+          <TransitionChild
+            as="template"
+            enter="transition-transform duration-slow ease-product"
+            enter-from="translate-y-full sm:translate-x-full sm:translate-y-0"
+            enter-to="translate-y-0 sm:translate-x-0"
+            leave="transition-transform duration-slow ease-product"
+            leave-from="translate-y-0 sm:translate-x-0"
+            leave-to="translate-y-full sm:translate-x-full sm:translate-y-0"
+          >
+            <DialogPanel class="max-h-[90vh] w-full overflow-y-auto rounded-t-xl bg-neutral-0 p-5 shadow-overlay sm:h-full sm:max-h-none sm:max-w-sm sm:rounded-none">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <DialogTitle as="h2" class="text-lg font-bold text-neutral-900">
+                    Filter schools
+                  </DialogTitle>
+                  <DialogDescription class="mt-1 text-sm text-neutral-600">
+                    Narrow results by area, phase, and school attributes.
+                  </DialogDescription>
+                </div>
+                <UiIconButton label="Close filters" @click="mobileFiltersOpen = false">
+                  <XMarkIcon />
+                </UiIconButton>
+              </div>
+
+              <div class="mt-6">
+                <SchoolFilterFields
+                  v-model:area="area"
+                  v-model:phase="phase"
+                  v-model:sap="sap"
+                  v-model:gep="gep"
+                  v-model:boys="boys"
+                  v-model:girls="girls"
+                  v-model:affiliated="affiliated"
+                  :location-status="locationStatus"
+                  :location-message="locationMessage"
+                  @request-location="requestLocation"
+                  @clear-location="clearLocation"
+                />
+              </div>
+
+              <div class="sticky bottom-0 -mx-5 mt-7 flex gap-3 border-t border-neutral-200 bg-neutral-0 px-5 pb-1 pt-4">
+                <UiButton variant="secondary" class="flex-1" @click="resetFilters">
+                  Clear
+                </UiButton>
+                <UiButton class="flex-1" @click="mobileFiltersOpen = false">
+                  Show {{ sortedSchools.length }} schools
+                </UiButton>
+              </div>
+            </DialogPanel>
+          </TransitionChild>
+        </div>
+      </Dialog>
+    </TransitionRoot>
+  </div>
 </template>
-<script setup>
 
-import { ChevronRightIcon, ReceiptPercentIcon, MagnifyingGlassPlusIcon, MapPinIcon } from '@heroicons/vue/20/solid'
-import { getAffilList } from '../utils/selectionChoices'
-
-const props = defineProps({
-    selectedArea: {
-        type: String,
-        default: 'All'
-    }
-})
-
-const sapChoices = getSapList()
-const gepChoices = getGepList()
-const areaChoices = getAreaList()
-const affilChoices = getAffilList()
-const phaseChoices = [{ name: '2A' }, { name: '2B' }, { name: '2C' }, { name: '2C(S)' }, { name: '3' }]
-const sortByDistance = ref(false)
-const lat = ref(null)
-const lon = ref(null)
-
+<script setup lang="ts">
+import {
+  Dialog,
+  DialogDescription,
+  DialogPanel,
+  DialogTitle,
+  TransitionChild,
+  TransitionRoot,
+} from '@headlessui/vue'
+import {
+  AdjustmentsHorizontalIcon,
+  ChevronRightIcon,
+  InformationCircleIcon,
+  XMarkIcon,
+} from '@heroicons/vue/24/outline'
 import { ref as dbRef } from 'firebase/database'
 import { useDatabase, useDatabaseList } from 'vuefire'
-
-const db = useDatabase()
-const schoolsFull = useDatabaseList(dbRef(db, 'school_profile'))
-const schools = computed(() => schoolsFull.value.filter(x => x.odds && x.sid))
-
-const showIntro = ref(false)
-const selected = ref({
-    area: { name: props.selectedArea },
-    sap: { name: 'All' },
-    gep: { name: 'All' },
-    affil: { name: 'All' },
-    school: null,
-    phase: { name: '2C' },
-})
-
-const updateSchoolFilter = (school) => {
-    selected.value.school = school;
-    console.log('Selected school updated to:', selected.value.school);
-};
-
 import { getLoc, haversineDistance } from '../utils/geo'
 
-const getGeoDistanceBand = (lat1, lon1, lat2, lon2) => {
-    const distKm = haversineDistance(lat1, lon1, lat2, lon2, "km")
-    if (distKm < 2) {
-        return `${distKm.toFixed(1)}km`
-    } else {
-        return '>2km'
-    }
+type LocationStatus = 'idle' | 'requesting' | 'ready' | 'denied' | 'unavailable' | 'error'
+type SortValue = 'name' | 'rate-desc' | 'rate-asc' | 'distance'
+
+interface School {
+  id?: string
+  sid: string
+  name: string
+  area: string
+  address: string
+  logo_url?: string
+  logo_url2?: string
+  review_rating_avg?: number
+  type_sap?: boolean
+  type_gep?: boolean
+  'type_girls-only'?: boolean
+  'type_boys-only'?: boolean
+  affiliations?: string
+  odds?: Record<string, number | string | null>
+  latlon?: {
+    lat: number
+    lon: number
+  }
 }
 
-const getLocation = async () => {
-    try {
-        const { latitude, longitude } = await getLoc()
-        console.log('User location:', latitude, longitude);
-        lat.value = latitude
-        lon.value = longitude
-        schoolsForDisplay.value.forEach(school => {
-            school.distance = haversineDistance(latitude, longitude, school.latlon.lat, school.latlon.lon, "km")
-        })
-        schoolsForDisplay.value.sort((a, b) => a.distance - b.distance)
-        sortByDistance.value = true
-    } catch (err) {
-        console.error(err)
-    }
-}
-
-const schoolsForDisplay = computed(() => {
-    const area = selected.value.area.name
-    const sap = selected.value.sap.name
-    const gep = selected.value.gep.name
-    const affil = selected.value.affil.name
-    const school = selected.value.school
-    let filtered = schools.value
-    if (area === 'All') {
-        // filtered = schools.value
-    } else {
-        filtered = schools.value.filter((x) => x.area === area)
-    }
-
-    if (sap === true) {
-        filtered = filtered.filter((x) => x.type_sap)
-    } else if (sap === false) {
-        filtered = filtered.filter((x) => !x.type_sap)
-    } else {
-
-    }
-
-    if (gep === true) {
-        filtered = filtered.filter((x) => x.type_gep)
-    } else if (gep === false) {
-        filtered = filtered.filter((x) => !x.type_sap)
-    } else {
-
-    }
-
-    if (affil === true) {
-        filtered = filtered.filter((x) => x.affiliations != '-')
-    } else if (affil === false) {
-        filtered = filtered.filter((x) => x.affiliations == '-')
-    } else {
-
-    }
-
-    if (school) {
-        filtered = schools.value.filter((x) => x.name === school)
-    }
-
-    // if (lat.value && lon.value) {
-    //     filtered = schools.value.filter((x) => x.distance < 2)
-    // } 
-
-    return filtered
-
+const props = withDefaults(defineProps<{
+  selectedArea?: string
+}>(), {
+  selectedArea: 'All',
 })
+
+const defaultPhase = '2C'
+const route = useRoute()
+const router = useRouter()
+const db = useDatabase()
+const schoolsFull = useDatabaseList<School>(dbRef(db, 'school_profile'))
+const isLoading = schoolsFull.pending
+const loadError = schoolsFull.error
+
+const readQuery = (key: string) => {
+  const value = route.query[key]
+  return Array.isArray(value) ? value[0] : value
+}
+
+const searchQuery = ref(readQuery('q') || '')
+const area = ref(readQuery('area') || props.selectedArea)
+const phase = ref(readQuery('phase') || defaultPhase)
+const sap = ref(readQuery('sap') === '1')
+const gep = ref(readQuery('gep') === '1')
+const boys = ref(readQuery('boys') === '1')
+const girls = ref(readQuery('girls') === '1')
+const affiliated = ref(readQuery('affiliated') === '1')
+const sort = ref<SortValue>((readQuery('sort') as SortValue) || 'name')
+const mobileFiltersOpen = ref(false)
+const locationStatus = ref<LocationStatus>('idle')
+const locationErrorMessage = ref('')
+const userLatitude = ref<number | null>(null)
+const userLongitude = ref<number | null>(null)
+const failedLogos = reactive(new Set<string>())
+const syncingFromRoute = ref(false)
+const mobileFiltersTrigger = ref<{ $el?: HTMLButtonElement } | null>(null)
+let mobileFiltersTriggerElement: HTMLElement | null = null
+let queryTimer: ReturnType<typeof setTimeout> | undefined
+
+const schools = computed(() => (
+  schoolsFull.value.filter(school => school.odds && school.sid)
+))
+
+const normalizedSearch = computed(() => searchQuery.value.trim().toLocaleLowerCase('en-SG'))
+
+const filteredSchools = computed(() => {
+  const query = normalizedSearch.value
+
+  return schools.value.filter((school) => {
+    const matchesSearch = !query || [
+      school.name,
+      school.address,
+      school.area,
+    ].some(value => value?.toLocaleLowerCase('en-SG').includes(query))
+
+    return matchesSearch
+      && (area.value === 'All' || school.area === area.value)
+      && (!sap.value || Boolean(school.type_sap))
+      && (!gep.value || Boolean(school.type_gep))
+      && (!boys.value || Boolean(school['type_boys-only']))
+      && (!girls.value || Boolean(school['type_girls-only']))
+      && (!affiliated.value || (school.affiliations && school.affiliations !== '-'))
+  })
+})
+
+const rateFor = (school: School) => {
+  const value = school.odds?.[phase.value]
+  if (value === null || value === undefined || value === '') {
+    return null
+  }
+  const numericValue = Number(value)
+  return Number.isFinite(numericValue) ? numericValue : null
+}
+
+const distanceFor = (school: School) => {
+  if (
+    locationStatus.value !== 'ready'
+    || userLatitude.value === null
+    || userLongitude.value === null
+    || !school.latlon
+  ) {
+    return null
+  }
+  return haversineDistance(
+    userLatitude.value,
+    userLongitude.value,
+    school.latlon.lat,
+    school.latlon.lon,
+    'km',
+  )
+}
+
+const sortedSchools = computed(() => (
+  filteredSchools.value
+    .map((school, index) => ({ school, index }))
+    .sort((left, right) => {
+      let comparison = 0
+      if (sort.value === 'rate-desc' || sort.value === 'rate-asc') {
+        const leftRate = rateFor(left.school)
+        const rightRate = rateFor(right.school)
+        if (leftRate === null || rightRate === null) {
+          comparison = leftRate === rightRate ? 0 : leftRate === null ? 1 : -1
+        } else {
+          comparison = sort.value === 'rate-desc'
+            ? rightRate - leftRate
+            : leftRate - rightRate
+        }
+      } else if (sort.value === 'distance' && locationStatus.value === 'ready') {
+        const leftDistance = distanceFor(left.school) ?? Number.POSITIVE_INFINITY
+        const rightDistance = distanceFor(right.school) ?? Number.POSITIVE_INFINITY
+        comparison = leftDistance - rightDistance
+      } else {
+        comparison = left.school.name.localeCompare(right.school.name, 'en-SG')
+      }
+
+      return comparison || left.index - right.index
+    })
+    .map(item => item.school)
+))
+
+const sortOptions = computed(() => [
+  { label: 'School name', value: 'name' },
+  { label: 'Highest historical rate', value: 'rate-desc' },
+  { label: 'Lowest historical rate', value: 'rate-asc' },
+  {
+    label: locationStatus.value === 'ready' ? 'Nearest first' : 'Nearest first — enable location',
+    value: 'distance',
+    disabled: locationStatus.value !== 'ready',
+  },
+])
+
+const nonDefaultFilterCount = computed(() => [
+  area.value !== 'All',
+  phase.value !== defaultPhase,
+  sap.value,
+  gep.value,
+  boys.value,
+  girls.value,
+  affiliated.value,
+].filter(Boolean).length)
+
+const hasResettableState = computed(() => (
+  Boolean(searchQuery.value)
+  || nonDefaultFilterCount.value > 0
+  || sort.value !== 'name'
+))
+
+const resultSummary = computed(() => {
+  const count = sortedSchools.value.length
+  return `${count} matching ${count === 1 ? 'school' : 'schools'}`
+})
+
+const formatRate = (rate: number | null) => (
+  rate === null ? 'N/A' : `${(rate * 100).toFixed(0)}%`
+)
+
+const formatDistance = (distance: number | null) => {
+  if (distance === null) {
+    return ''
+  }
+  return distance < 10 ? `${distance.toFixed(1)} km` : `${Math.round(distance)} km`
+}
+
+const locationMessage = computed(() => {
+  if (locationStatus.value === 'requesting') {
+    return 'Waiting for your browser’s location permission…'
+  }
+  if (locationStatus.value === 'ready') {
+    return 'Distance is calculated on this device and is not stored.'
+  }
+  return locationErrorMessage.value
+})
+
+const openMobileFilters = () => {
+  mobileFiltersTriggerElement = document.activeElement instanceof HTMLElement
+    ? document.activeElement
+    : mobileFiltersTrigger.value?.$el || null
+  mobileFiltersOpen.value = true
+}
+const restoreMobileFiltersFocus = () => {
+  const trigger = mobileFiltersTriggerElement || mobileFiltersTrigger.value?.$el
+  window.setTimeout(() => {
+    if (trigger?.isConnected) {
+      trigger.focus()
+    }
+  }, 0)
+  mobileFiltersTriggerElement = null
+}
+
+const markLogoFailed = (sid: string) => {
+  failedLogos.add(sid)
+}
+
+const requestLocation = async () => {
+  locationStatus.value = 'requesting'
+  locationErrorMessage.value = ''
+  try {
+    const { latitude, longitude } = await getLoc()
+    userLatitude.value = latitude
+    userLongitude.value = longitude
+    locationStatus.value = 'ready'
+    sort.value = 'distance'
+  } catch (error: unknown) {
+    const code = typeof error === 'object' && error && 'code' in error
+      ? Number((error as { code?: number }).code)
+      : null
+
+    if (code === 1) {
+      locationStatus.value = 'denied'
+      locationErrorMessage.value = 'Location permission was denied.'
+    } else if (code === 2) {
+      locationStatus.value = 'unavailable'
+      locationErrorMessage.value = 'Your browser could not determine your location.'
+    } else {
+      locationStatus.value = 'error'
+      locationErrorMessage.value = 'We could not access your location. Please try again.'
+    }
+  }
+}
+
+const clearLocation = () => {
+  userLatitude.value = null
+  userLongitude.value = null
+  locationStatus.value = 'idle'
+  locationErrorMessage.value = ''
+  if (sort.value === 'distance') {
+    sort.value = 'name'
+  }
+}
+
+const resetFilters = () => {
+  area.value = 'All'
+  phase.value = defaultPhase
+  sap.value = false
+  gep.value = false
+  boys.value = false
+  girls.value = false
+  affiliated.value = false
+}
+
+const resetAll = () => {
+  searchQuery.value = ''
+  sort.value = 'name'
+  resetFilters()
+}
+
+const reloadPage = () => {
+  window.location.reload()
+}
+
+const routeState = () => ({
+  q: readQuery('q') || '',
+  area: readQuery('area') || props.selectedArea,
+  phase: readQuery('phase') || defaultPhase,
+  sap: readQuery('sap') === '1',
+  gep: readQuery('gep') === '1',
+  boys: readQuery('boys') === '1',
+  girls: readQuery('girls') === '1',
+  affiliated: readQuery('affiliated') === '1',
+  sort: (readQuery('sort') as SortValue) || 'name',
+})
+
+const applyRouteState = () => {
+  syncingFromRoute.value = true
+  const state = routeState()
+  searchQuery.value = state.q
+  area.value = state.area
+  phase.value = state.phase
+  sap.value = state.sap
+  gep.value = state.gep
+  boys.value = state.boys
+  girls.value = state.girls
+  affiliated.value = state.affiliated
+  sort.value = state.sort === 'distance' && locationStatus.value !== 'ready'
+    ? 'name'
+    : state.sort
+  nextTick(() => {
+    syncingFromRoute.value = false
+  })
+}
+
+const syncUrl = () => {
+  if (syncingFromRoute.value) {
+    return
+  }
+  clearTimeout(queryTimer)
+  queryTimer = setTimeout(() => {
+    const query: Record<string, string> = {}
+    if (searchQuery.value.trim()) query.q = searchQuery.value.trim()
+    if (area.value !== 'All') query.area = area.value
+    if (phase.value !== defaultPhase) query.phase = phase.value
+    if (sap.value) query.sap = '1'
+    if (gep.value) query.gep = '1'
+    if (boys.value) query.boys = '1'
+    if (girls.value) query.girls = '1'
+    if (affiliated.value) query.affiliated = '1'
+    if (sort.value !== 'name') query.sort = sort.value
+
+    router.replace({ query })
+  }, 180)
+}
+
+watch(
+  [searchQuery, area, phase, sap, gep, boys, girls, affiliated, sort],
+  syncUrl,
+)
+watch(
+  () => route.fullPath.split('#')[0],
+  applyRouteState,
+)
+
+onBeforeUnmount(() => clearTimeout(queryTimer))
 </script>
