@@ -78,10 +78,22 @@ try {
     await page.goto(`${baseUrl}/schools/ai_tong?phase=2C`, { waitUntil: 'domcontentloaded' })
     await page.getByRole('heading', { name: 'Ai Tong School', level: 1 }).waitFor()
     await page.waitForTimeout(350)
+    const schoolDetailsToggle = page.getByRole('button', { name: 'Location and school links' })
+    await schoolDetailsToggle.waitFor()
+    if (await page.getByRole('link', { name: 'Open map' }).isVisible()) {
+      throw new Error('School location details should start collapsed on mobile')
+    }
+    await schoolDetailsToggle.click()
+    await page.getByRole('link', { name: 'Open map' }).waitFor()
     await page.getByText('Historical rate', { exact: true }).first().waitFor()
     await page.getByText('Vacancy', { exact: true }).last().waitFor()
+    const definitionsToggle = page.getByRole('button', { name: 'How to read these results' })
+    if (await definitionsToggle.getAttribute('aria-expanded') !== 'false') {
+      throw new Error('Result definitions should start collapsed on mobile')
+    }
+    await definitionsToggle.click()
     await page.getByText('Admission phases and ballot notation').click()
-    await page.getByText(/Phase 1 covers children with a sibling/).waitFor()
+    await page.getByText(/For children who have a sibling studying/).waitFor()
     const overflow = await page.evaluate(() => (
       document.documentElement.scrollWidth > document.documentElement.clientWidth
     ))

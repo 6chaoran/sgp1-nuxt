@@ -105,8 +105,9 @@ try {
     viewport: { width: 390, height: 844 },
     path: '/schools/ai_tong?phase=2C',
     prepare: async (page) => {
+      await page.getByRole('button', { name: 'How to read these results' }).click()
       await page.getByText('Admission phases and ballot notation').click()
-      await page.getByText(/Phase 1 covers children with a sibling/).scrollIntoViewIfNeeded()
+      await page.getByText(/For children who have a sibling studying/).scrollIntoViewIfNeeded()
     },
   })
 
