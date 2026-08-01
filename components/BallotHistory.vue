@@ -144,56 +144,85 @@
         </ul>
       </UiCard>
 
-      <UiCard class="mt-6" aria-labelledby="definitions-heading">
-        <div class="flex items-start gap-3">
+      <UiCard class="mt-6" aria-label="How to read these results">
+        <button
+          type="button"
+          class="flex min-h-11 w-full items-center gap-3 rounded-md text-left sm:hidden"
+          :aria-expanded="definitionsOpen"
+          aria-controls="result-definitions"
+          @click="definitionsOpen = !definitionsOpen"
+        >
           <InformationCircleIcon class="mt-0.5 h-5 w-5 shrink-0 text-brand-600 dark:text-brand-400" aria-hidden="true" />
-          <div>
-            <h3 id="definitions-heading" class="font-bold text-neutral-900">
-              How to read these results
-            </h3>
-            <p class="mt-1 text-sm leading-6 text-neutral-600">
-              Historical allocation rate is places taken divided by applications.
-              A higher past rate is not a promise of future admission.
-            </p>
-          </div>
+          <span class="flex-1 font-bold text-neutral-900">How to read these results</span>
+          <ChevronDownIcon
+            class="h-5 w-5 shrink-0 text-neutral-500 transition-transform"
+            :class="{ 'rotate-180': definitionsOpen }"
+            aria-hidden="true"
+          />
+        </button>
+
+        <div class="hidden items-start gap-3 sm:flex">
+          <InformationCircleIcon class="mt-0.5 h-5 w-5 shrink-0 text-brand-600 dark:text-brand-400" aria-hidden="true" />
+          <h3 class="font-bold text-neutral-900">How to read these results</h3>
         </div>
 
-        <dl class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div v-for="item in metricDefinitions" :key="item.term">
-            <dt class="text-sm font-semibold text-neutral-800">{{ item.term }}</dt>
-            <dd class="mt-1 text-sm leading-6 text-neutral-600">{{ item.definition }}</dd>
-          </div>
-        </dl>
+        <div
+          id="result-definitions"
+          class="sm:block"
+          :class="definitionsOpen ? 'block' : 'hidden'"
+        >
+          <p class="mt-3 text-sm leading-6 text-neutral-600 sm:mt-1 sm:pl-8">
+            Historical allocation rate is places taken divided by applications.
+            A higher past rate is not a promise of future admission.
+          </p>
 
-        <details class="mt-5 border-t border-neutral-200 pt-4">
-          <summary class="flex min-h-11 cursor-pointer items-center rounded-md text-sm font-semibold text-brand-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20 dark:text-brand-300">
-            Admission phases and ballot notation
-          </summary>
-          <div class="mt-3 grid gap-5 text-sm leading-6 text-neutral-600 lg:grid-cols-2">
-            <div>
-              <p>
-                Phase 1 covers children with a sibling in the school. Phases
-                2A and 2B cover defined priority groups. Phase 2C is the main
-                open phase, followed by 2C Supplementary; Phase 3 is for
-                non-citizens.
-              </p>
-              <p class="mt-2">
-                Eligibility rules can change, so use current MOE guidance for
-                an upcoming registration exercise.
+          <dl class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div v-for="item in metricDefinitions" :key="item.term">
+              <dt class="text-sm font-semibold text-neutral-800">{{ item.term }}</dt>
+              <dd class="mt-1 text-sm leading-6 text-neutral-600">{{ item.definition }}</dd>
+            </div>
+          </dl>
+
+          <details class="mt-5 border-t border-neutral-200 pt-4">
+            <summary class="flex min-h-11 cursor-pointer items-center rounded-md text-sm font-semibold text-brand-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20 dark:text-brand-300">
+              Admission phases and ballot notation
+            </summary>
+            <div class="mt-3 text-sm leading-6 text-neutral-600">
+              <ul class="list-disc space-y-2 pl-5" role="list">
+              <li>
+                <strong class="font-semibold text-neutral-800">Phase 1:</strong>
+                For children who have a sibling studying at the school.
+              </li>
+              <li>
+                <strong class="font-semibold text-neutral-800">Phases 2A and 2B:</strong>
+                For children who meet defined priority-group criteria.
+              </li>
+              <li>
+                <strong class="font-semibold text-neutral-800">Phase 2C:</strong>
+                The main open phase, followed by Phase 2C Supplementary.
+              </li>
+              <li>
+                <strong class="font-semibold text-neutral-800">Phase 3:</strong>
+                For children who are not Singapore Citizens or Permanent Residents.
+              </li>
+              <li>
+                <strong class="font-semibold text-neutral-800">Ballot notation:</strong>
+                Preserves the group notation from the source record. For example,
+                <strong class="font-semibold text-neutral-800">SC&lt;1</strong> means
+                Singapore Citizen applicants living within 1 km of the school.
+              </li>
+              <li>
+                <strong class="font-semibold text-neutral-800">Dash (—):</strong>
+                No ballot notation was recorded for that phase.
+              </li>
+              </ul>
+              <p class="mt-4 rounded-md bg-neutral-50 px-3 py-2.5">
+                Eligibility rules can change. Check current MOE guidance when
+                planning for an upcoming registration exercise.
               </p>
             </div>
-            <div>
-              <p>
-                The ballot field preserves the group notation in the source
-                record. For example, <strong>SC&lt;1</strong> refers to
-                Singapore Citizen applicants living within 1 km.
-              </p>
-              <p class="mt-2">
-                A dash means no ballot notation was recorded for that phase.
-              </p>
-            </div>
-          </div>
-        </details>
+          </details>
+        </div>
       </UiCard>
 
       <UiCard class="mt-6" aria-labelledby="trend-heading">
@@ -240,6 +269,8 @@ const props = defineProps<{
   year: string
   phaseFocus: string
 }>()
+
+const definitionsOpen = ref(false)
 
 const phaseOrder = ['1', '2A', '2A(1)', '2A(2)', '2B', '2C', '2C(S)', '3']
 const normalizePhase = (phase: string) => phase.replace(/^Phase\s+/i, '')

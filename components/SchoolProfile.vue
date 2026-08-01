@@ -68,7 +68,26 @@
         </div>
       </div>
 
-      <div class="grid gap-5 p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+      <button
+        type="button"
+        class="flex min-h-12 w-full items-center justify-between gap-3 border-t border-neutral-200 px-5 text-left text-sm font-semibold text-brand-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-brand-500/20 sm:hidden dark:text-brand-300"
+        :aria-expanded="schoolDetailsOpen"
+        aria-controls="school-profile-details"
+        @click="schoolDetailsOpen = !schoolDetailsOpen"
+      >
+        <span>Location and school links</span>
+        <ChevronDownIcon
+          class="h-5 w-5 shrink-0 transition-transform"
+          :class="{ 'rotate-180': schoolDetailsOpen }"
+          aria-hidden="true"
+        />
+      </button>
+
+      <div
+        id="school-profile-details"
+        class="gap-5 p-5 sm:grid sm:p-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center"
+        :class="schoolDetailsOpen ? 'grid' : 'hidden'"
+      >
         <div>
           <div v-if="profile.address" class="flex items-start gap-3">
             <MapPinIcon class="mt-0.5 h-5 w-5 shrink-0 text-brand-600 dark:text-brand-400" aria-hidden="true" />
@@ -122,6 +141,7 @@
 import {
   ArrowTopRightOnSquareIcon,
   BuildingLibraryIcon,
+  ChevronDownIcon,
   ChevronRightIcon,
   HomeIcon,
   MapIcon,
@@ -150,6 +170,7 @@ const props = defineProps<{
 }>()
 
 const logoFailed = ref(false)
+const schoolDetailsOpen = ref(false)
 const hasReviewRating = computed(() => (
   Number.isFinite(Number(props.profile.review_rating_avg))
   && Number(props.profile.review_num) > 0

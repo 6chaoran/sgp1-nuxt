@@ -32,15 +32,6 @@
 
         <div class="flex items-center gap-1">
           <nav class="hidden items-center gap-1 md:flex" aria-label="Primary navigation">
-            <NuxtLink
-              to="/"
-              :class="desktopNavClasses(isResearchRoute)"
-              :aria-current="isResearchRoute ? 'page' : undefined"
-            >
-              <MagnifyingGlassIcon class="h-4 w-4" aria-hidden="true" />
-              School research
-            </NuxtLink>
-
             <Menu as="div" class="relative">
               <MenuButton :class="desktopNavClasses(false)">
                 Resources
@@ -156,6 +147,8 @@
       </UiContainer>
     </header>
 
+    <AnnouncementBanner />
+
     <main id="main-content" class="py-5 sm:py-7" tabindex="-1">
       <UiContainer>
         <NuxtLoadingIndicator color="#3437c7" />
@@ -218,15 +211,6 @@
                 </p>
 
                 <nav class="mt-6 space-y-1" aria-label="Mobile navigation">
-                  <NuxtLink
-                    to="/"
-                    :class="mobileNavClasses(isResearchRoute)"
-                    :aria-current="isResearchRoute ? 'page' : undefined"
-                    @click="mobileMenuOpen = false"
-                  >
-                    <MagnifyingGlassIcon class="h-5 w-5" aria-hidden="true" />
-                    School research
-                  </NuxtLink>
                   <button
                     type="button"
                     :class="mobileNavClasses(false)"
@@ -374,7 +358,6 @@ import {
   CheckIcon,
   ComputerDesktopIcon,
   HeartIcon,
-  MagnifyingGlassIcon,
   MoonIcon,
   QuestionMarkCircleIcon,
   Squares2X2Icon,
@@ -401,11 +384,6 @@ const siteLogo = '/sgp1-mark.png'
 const siteUrl = 'https://sgp1.ichaoran.com'
 const siteDescription = 'Explore historical Singapore Primary 1 ballot information by school, registration year, and admission phase.'
 const canonicalUrl = computed(() => new URL(route.path, siteUrl).toString())
-const isResearchRoute = computed(() => (
-  route.path === '/'
-  || route.path.startsWith('/area/')
-  || route.path.startsWith('/schools/')
-))
 const themeColor = computed(() => isDarkTheme.value ? '#111522' : '#3437c7')
 const themeButtonLabel = computed(() => (
   `Theme: ${themePreference.value === 'system' ? 'System' : themePreference.value === 'dark' ? 'Dark' : 'Light'}`

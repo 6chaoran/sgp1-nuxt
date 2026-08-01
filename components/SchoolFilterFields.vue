@@ -58,6 +58,13 @@
       :options="areaOptions"
     />
 
+    <UiSelectField
+      v-model="phase"
+      label="Admission phase"
+      hint="Historical rates use the selected registration phase."
+      :options="phaseOptions"
+    />
+
     <fieldset>
       <legend class="text-sm font-semibold text-neutral-800">
         School attributes
@@ -89,12 +96,6 @@
       </div>
     </fieldset>
 
-    <UiSelectField
-      v-model="phase"
-      label="Admission phase"
-      hint="Historical rates use the selected registration phase."
-      :options="phaseOptions"
-    />
   </div>
 </template>
 

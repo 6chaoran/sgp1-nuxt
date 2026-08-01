@@ -43,8 +43,8 @@
               Plan with past registration data
             </h1>
             <p class="mt-3 max-w-xl text-sm leading-6 text-neutral-600 sm:text-base">
-              Explore historical ballot information by school and admission phase
-              to support your family’s planning.
+              Spot the patterns behind past ballots. Compare schools and admission
+              phases to plan your little ones’ next move with greater clarity.
             </p>
           </div>
           <img
@@ -327,9 +327,14 @@
                   />
                   <div class="min-w-0 flex-1">
                     <div class="flex items-start justify-between gap-3">
-                      <h2 class="text-sm font-bold leading-5 text-neutral-900">
-                        {{ school.name }}
-                      </h2>
+                      <div class="min-w-0">
+                        <h2 class="text-sm font-bold leading-5 text-neutral-900">
+                          {{ school.name }}
+                        </h2>
+                        <p class="mt-0.5 text-xs leading-5 text-neutral-600">
+                          {{ school.area }}<span class="hidden sm:inline"> · {{ school.address }}</span>
+                        </p>
+                      </div>
                       <div class="shrink-0 text-right">
                         <p class="text-lg font-semibold tabular-nums text-neutral-900">
                           {{ formatRate(rateFor(school)) }}
@@ -340,9 +345,6 @@
                       </div>
                     </div>
                     <SchoolBadges :school="school" class="mt-2" />
-                    <p class="mt-2 text-xs leading-5 text-neutral-600">
-                      {{ school.area }} · {{ school.address }}
-                    </p>
                     <p
                       v-if="distanceFor(school) !== null"
                       class="mt-1 text-xs font-semibold text-brand-700 dark:text-brand-300"
